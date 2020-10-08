@@ -28,6 +28,7 @@ package org.hid4java;
 import org.hid4java.jna.HidApi;
 import org.hid4java.jna.HidDeviceInfoStructure;
 import org.hid4java.jna.HidDeviceStructure;
+import org.hid4java.jna.WideStringBuffer;
 
 /**
  * <p>
@@ -222,7 +223,21 @@ public class HidDevice {
     }
     return HidApi.read(hidDeviceStructure, data);
   }
-  
+
+  /**
+   * Convenient read method that not create a WideStringBuffer on every api call.
+   * Similar to {@link #read(byte[])}.
+   *
+   * @param data the buffer to read into
+   * @return the number of bytes read
+   */
+  public int read(WideStringBuffer data) {
+    if (!isOpen()) {
+      throw new IllegalStateException("Device has not been opened");
+    }
+    return HidApi.read(hidDeviceStructure, data);
+  }
+
   /**
    * <p>
    * Read an Input report from a HID device
@@ -395,6 +410,27 @@ public class HidDevice {
       throw new IllegalStateException("Device has not been opened");
     }
     int result = HidApi.write(hidDeviceStructure, message, packetLength, reportId);
+    // Update HID manager
+    hidDeviceManager.afterDeviceWrite();
+    return result;
+  }
+
+  /**
+   * <p>Write the buffer content to a HID device using a simplified interface</p>
+   *
+   *
+   * Similar to {@link #write(byte[], int, byte)}, without creating a WideStringBuffer on every api call.
+   * It uses the {@link HidApi#write(HidDeviceStructure, WideStringBuffer, int)} under the hood.
+   *
+   * @param message the `report` buffer to be sent
+   * @param length the length of the data to be sent
+   * @return The number of bytes written, or -1 if an error occurs
+   */
+  public int write(WideStringBuffer message, int length) {
+    if (!isOpen()) {
+      throw new IllegalStateException("Device has not been opened");
+    }
+    int result = HidApi.write(hidDeviceStructure, message, length);
     // Update HID manager
     hidDeviceManager.afterDeviceWrite();
     return result;

@@ -274,6 +274,18 @@ public class HidApi {
     return hidApiLibrary.hid_read(device.ptr(), wBuffer, wBuffer.buffer.length);
   }
 
+
+  /**
+   * Convenient read method to not create the WideStringBuffer on every api call.
+   */
+  public static int read(HidDeviceStructure device, WideStringBuffer buffer) {
+    if (device == null || buffer == null) {
+      return DEVICE_ERROR;
+    }
+
+    return hidApiLibrary.hid_read(device.ptr(), buffer, buffer.buffer.length);
+  }
+
   /**
    * <p>Read an Input report from a HID device with timeout</p>
    *
@@ -294,6 +306,18 @@ public class HidApi {
 
     return hidApiLibrary.hid_read_timeout(device.ptr(), wBuffer, buffer.length, timeoutMillis);
 
+  }
+
+
+  /**
+   * Convenient read method to not create WideStringBuffer on every api call.
+   */
+  public static int read(HidDeviceStructure device, WideStringBuffer buffer, int timeoutMillis) {
+    if (device == null || buffer == null) {
+      return DEVICE_ERROR;
+    }
+
+    return hidApiLibrary.hid_read_timeout(device.ptr(), buffer, buffer.buffer.length, timeoutMillis);
   }
 
   /**
@@ -418,6 +442,24 @@ public class HidApi {
 
     return hidApiLibrary.hid_write(device.ptr(), report, report.buffer.length);
 
+  }
+
+  /**
+   * Convenient write method that does not create WideStringBuffer (and also not copy the buffer content) in every api call.
+   * Expect the reportId to be the first element of [data].
+   *
+   * @param device   The device
+   * @param data     The report data to write (including the Report ID at the first element)
+   * @param length   The length of the data to be sent
+   * @return The number of bytes written, or -1 if an error occurs
+   */
+  public static int write(HidDeviceStructure device, WideStringBuffer data, int length) {
+    // Fail fast
+    if (device == null || data == null) {
+      return DEVICE_ERROR;
+    }
+
+    return hidApiLibrary.hid_write(device.ptr(), data, length);
   }
 
   /**
